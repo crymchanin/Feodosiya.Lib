@@ -1,0 +1,6 @@
+﻿
+1.2.2.1 (16.03.2018г)
+	Добавлен класс Feodosiya.Lib.Net.FTPHelper;
+	Добавлен класс Feodosiya.Lib.Logs.DebugHelper;
+	Изменения в методе Feodosiya.Lib.App.AppHelper.AddToAutorun(string pathToApp). Запись о внесении программы в автозагрузку,
+		преместилась в реестре из HKEY_LOCAL_MACHINE в HKEY_CURRENT_USER;
