@@ -66,7 +66,7 @@ namespace Feodosiya.Lib.Conf {
         /// <param name="configuration">Объект конфигурации</param>
         /// <param name="formatJson">Если имеет значение true, то файл конфигурации будет приведен к читаемому виду</param>
         /// <returns></returns>
-        public void SaveConfig(object configuration, bool formatJson = true) {
+        public void SaveConfig(object configuration, bool formatJson) {
             SaveConfig(configuration, Encoding.Default, formatJson);
         }
 
@@ -87,7 +87,7 @@ namespace Feodosiya.Lib.Conf {
         /// <param name="encoding">Кодировка в которой будет сохранен файл конфигурации</param>
         /// <param name="formatJson">Если имеет значение true, то файл конфигурации будет приведен к читаемому виду</param>
         /// <returns></returns>
-        public void SaveConfig(object configuration, Encoding encoding, bool formatJson = true) {
+        public void SaveConfig(object configuration, Encoding encoding, bool formatJson) {
             try {
                 using (MemoryStream ms = new MemoryStream()) {
                     DataContractJsonSerializer ser = new DataContractJsonSerializer(configuration.GetType());
