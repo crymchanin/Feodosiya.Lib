@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
+
 namespace Feodosiya.Lib.Security {
     /// <summary>
     /// Предоставляет методы для шифрования и защиты информации

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Feodosiya.Lib.Text;
+using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
+
 
 namespace Feodosiya.Lib.Conf {
     /// <summary>
@@ -12,6 +14,8 @@ namespace Feodosiya.Lib.Conf {
         internal bool _isSuccess;
         internal string _confPath;
         internal Exception _lastError;
+        internal object _fileLock = new object();
+
 
         /// <summary>
         /// Инициализирует пустой экземпляр класса Feodosiya.Lib.Conf.ConfHelper с заданным путем конфигурационного файла
@@ -53,12 +57,49 @@ namespace Feodosiya.Lib.Conf {
         /// <param name="configuration">Объект конфигурации</param>
         /// <returns></returns>
         public void SaveConfig(object configuration) {
+            SaveConfig(configuration, Encoding.Default, false);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и сохраняет его содержимое в файл конфигурации
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="formatJson">Если имеет значение true, то файл конфигурации будет приведен к читаемому виду</param>
+        /// <returns></returns>
+        public void SaveConfig(object configuration, bool formatJson = true) {
+            SaveConfig(configuration, Encoding.Default, formatJson);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и сохраняет его содержимое в файл конфигурации
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="encoding">Кодировка в которой будет сохранен файл конфигурации</param>
+        /// <returns></returns>
+        public void SaveConfig(object configuration, Encoding encoding) {
+            SaveConfig(configuration, encoding, false);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и сохраняет его содержимое в файл конфигурации
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="encoding">Кодировка в которой будет сохранен файл конфигурации</param>
+        /// <param name="formatJson">Если имеет значение true, то файл конфигурации будет приведен к читаемому виду</param>
+        /// <returns></returns>
+        public void SaveConfig(object configuration, Encoding encoding, bool formatJson = true) {
             try {
                 using (MemoryStream ms = new MemoryStream()) {
                     DataContractJsonSerializer ser = new DataContractJsonSerializer(configuration.GetType());
 
                     ser.WriteObject(ms, configuration);
-                    File.WriteAllText(_confPath, Encoding.Default.GetString(ms.ToArray()));
+                    string json = encoding.GetString(ms.ToArray());
+                    if (formatJson) {
+                        json = JsonHelper.FormatJson(json);
+                    }
+                    lock (_fileLock) {
+                        File.WriteAllText(_confPath, json);
+                    }
                 }
                 _isSuccess = true;
             }
@@ -70,25 +111,11 @@ namespace Feodosiya.Lib.Conf {
         }
 
         /// <summary>
-        /// Выполняет сериализацию объекта конфигурации и сохраняет его содержимое в файл конфигурации
+        /// Возвращает путь к конфигурационному файлу
         /// </summary>
-        /// <param name="configuration">Объект конфигурации</param>
-        /// <param name="encoding">Кодировка в которой будет сохранен файл конфигурации</param>
-        /// <returns></returns>
-        public void SaveConfig(object configuration, Encoding encoding) {
-            try {
-                using (MemoryStream ms = new MemoryStream()) {
-                    DataContractJsonSerializer ser = new DataContractJsonSerializer(configuration.GetType());
-
-                    ser.WriteObject(ms, configuration);
-                    File.WriteAllText(_confPath, encoding.GetString(ms.ToArray()));
-                }
-                _isSuccess = true;
-            }
-            catch (Exception error) {
-                System.Diagnostics.Debug.WriteLine(error.ToString());
-                _isSuccess = false;
-                _lastError = error;
+        public string Path {
+            get {
+                return _confPath;
             }
         }
 

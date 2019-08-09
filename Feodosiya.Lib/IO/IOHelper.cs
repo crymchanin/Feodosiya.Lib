@@ -4,6 +4,9 @@ using System.Reflection;
 
 
 namespace Feodosiya.Lib.IO {
+    /// <summary>
+    /// Предоставляет методы для работы с файлами
+    /// </summary>
     public class IOHelper {
         /// <summary>
         /// Возвращает значение определяющее является заданный путь папкой или файлом

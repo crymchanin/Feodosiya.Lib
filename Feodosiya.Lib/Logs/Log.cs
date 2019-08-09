@@ -71,6 +71,7 @@ namespace Feodosiya.Lib.Logs {
         internal long _maxLogSize = 1024 * 500;
         internal const string EMPTY_STRING = "";
         internal bool _enableThrows = false;
+        internal object _fileLock = new object();
 
 
         internal void _CheckType() {
@@ -268,7 +269,9 @@ namespace Feodosiya.Lib.Logs {
                 string result = String.Format("{0} {1} {2}{3}", date, _StringFromMessageType(msgType), text, "\r\n");
 
                 if (this._logType == LogTypes.Text) {
-                    File.AppendAllText(this._logPath, result);
+                    lock (_fileLock) {
+                        File.AppendAllText(this._logPath, result);
+                    }
                     _CheckAutoCompress();
                 }
                 else if (this._logType == LogTypes.Memory) {
@@ -305,7 +308,9 @@ namespace Feodosiya.Lib.Logs {
                 string result = String.Format("{0} {1} {2}{3}", date, _StringFromMessageType(msgType), text, "\r\n");
 
                 if (this._logType == LogTypes.Text) {
-                    File.AppendAllText(this._logPath, result, encoding);
+                    lock (_fileLock) {
+                        File.AppendAllText(this._logPath, result, encoding);
+                    }
                     _CheckAutoCompress();
                 }
                 else if (this._logType == LogTypes.Memory) {
@@ -334,7 +339,9 @@ namespace Feodosiya.Lib.Logs {
                     throw new ArgumentNullException("Не задан путь для сохранения лог-файла");
                 }
 
-                File.AppendAllText(this._logPath, this._memory.ToString());
+                lock (_fileLock) {
+                    File.AppendAllText(this._logPath, this._memory.ToString());
+                }
                 _CheckAutoCompress();
             }
             catch (Exception ex) {
@@ -360,7 +367,9 @@ namespace Feodosiya.Lib.Logs {
                     throw new ArgumentNullException("Не задан путь для сохранения лог-файла");
                 }
 
-                File.AppendAllText(this._logPath, this._memory.ToString(), encoding);
+                lock (_fileLock) {
+                    File.AppendAllText(this._logPath, this._memory.ToString(), encoding);
+                }
                 _CheckAutoCompress();
             }
             catch (Exception ex) {
@@ -421,7 +430,9 @@ namespace Feodosiya.Lib.Logs {
                         throw new ArgumentNullException("Не задан путь расположения лог-файла");
                     }
                     if (File.Exists(this._logPath)) {
-                        File.Delete(this._logPath);
+                        lock (_fileLock) {
+                            File.Delete(this._logPath);
+                        }
                     }
                 }
                 else {
