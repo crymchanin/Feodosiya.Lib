@@ -92,7 +92,7 @@ namespace Feodosiya.Lib.IO {
         public String PipeName { get; private set; }
 
         /// <summary>Starts listening on the named pipe specified for the instance.</summary>
-        internal void Start() {
+        public void Start() {
             if (pipeServer == null) pipeServer = new NamedPipeServerStream(DEFAULT_PIPENAME, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
 
             try { pipeServer.BeginWaitForConnection(new AsyncCallback(PipeConnectionCallback), null); }
@@ -130,7 +130,7 @@ namespace Feodosiya.Lib.IO {
             }
         }
 
-        internal Boolean End() {
+        public Boolean End() {
             try {
                 pipeServer.Close();
                 pipeServer.Dispose();
