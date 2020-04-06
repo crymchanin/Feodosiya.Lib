@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Feodosiya.Lib")]
-[assembly: AssemblyCopyright("Copyright © Анатолий Карпекин 2019")]
+[assembly: AssemblyCopyright("Copyright © Анатолий Карпекин 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.3.2")]
-[assembly: AssemblyFileVersion("1.2.3.2")]
+[assembly: AssemblyVersion("1.2.3.3")]
+[assembly: AssemblyFileVersion("1.2.3.3")]

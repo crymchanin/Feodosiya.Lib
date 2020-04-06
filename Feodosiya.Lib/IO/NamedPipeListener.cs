@@ -1,102 +1,141 @@
 ﻿using System;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 
 namespace Feodosiya.Lib.IO {
-    /// <summary>Contains event data for <see cref="NamedPipeMessageReceiveHandler{TMessage}" /> events.</summary>
-    /// <typeparam name="TMessage"></typeparam>
-    public class NamedPipeListenerMessageReceivedEventArgs<TMessage> : EventArgs {
-        /// <summary>Initializes an instance of <see cref="NamedPipeListenerMessageReceivedEventArgs{TMessage}" /> with the specified <paramref name="message" />.</summary>
-        /// <param name="message">The message passed by the event.</param>
-        public NamedPipeListenerMessageReceivedEventArgs(TMessage message) {
-            this.Message = message;
+
+    /// <summary>Содержит данные о событии для <see cref="NamedPipeMessageReceivedHandler{T}" /> событий</summary>
+    /// <typeparam name="T"></typeparam>
+    public class NamedPipeListenerMessageReceivedEventArgs<T> : EventArgs {
+
+        /// <summary>Инициализирует экземпляр <see cref="NamedPipeListenerMessageReceivedEventArgs{T}" /> с указанным <paramref name="message" />.</summary>
+        /// <param name="message">Сообщение, переданное событием</param>
+        public NamedPipeListenerMessageReceivedEventArgs(T message) {
+            Message = message;
         }
 
-        /// <summary>Gets the message passed by the event.</summary>
-        public TMessage Message { get; private set; }
+        /// <summary>Получает сообщение, переданное событием</summary>
+        public T Message { get; private set; }
     }
 
-    /// <summary>Contains event data for <see cref="NamedPipeListenerErrorEventHandler" /> events.</summary>
+    /// <summary>Содержит данные о событии для <see cref="NamedPipeMessageErrorHandler" /> событий</summary>
     public class NamedPipeListenerErrorEventArgs : EventArgs {
-        /// <summary>Initializes an instance of <see cref="NamedPipeListenerErrorEventArgs" /> with the specified <paramref name="errorType" /> and <paramref name="ex" />.</summary>
-        /// <param name="errorType">A <see cref="NamedPipeListenerErrorType" /> describing the part of the listener process where the error was caught.</param>
-        /// <param name="ex">The <see cref="Exception" /> that was thrown.</param>
+        /// <summary>Инициализирует экземпляр <see cref="NamedPipeListenerErrorEventArgs" /> с указанным <paramref name="errorType" /> и <paramref name="ex" />.</summary>
+        /// <param name="errorType">Тип ошибки <see cref="NamedPipeListenerErrorType" />, который описывает часть процесса прослушивания, где была обнаружена ошибка</param>
+        /// <param name="ex">Исключение <see cref="Exception" /> которое было выброшено</param>
         public NamedPipeListenerErrorEventArgs(NamedPipeListenerErrorType errorType, Exception ex) {
-            this.ErrorType = errorType;
-            this.Exception = ex;
+            ErrorType = errorType;
+            Exception = ex;
         }
 
-        /// <summary>Gets a <see cref="NamedPipeListenerErrorType" /> describing the part of the listener process where the error was caught.</summary>
+        /// <summary>Получает тип ошибки <see cref="NamedPipeListenerErrorType" />, который описывает часть процесса прослушивания, где была обнаружена ошибка</summary>
         public NamedPipeListenerErrorType ErrorType { get; private set; }
 
-        /// <summary>Gets the <see cref="Exception" /> that was caught.</summary>
+        /// <summary>Получает <see cref="Exception" /> которое было перехвачено</summary>
         public Exception Exception { get; private set; }
     }
 
-    /// <summary>Represents a method that will handle an event where a message is received via named pipes.</summary>
-    /// <typeparam name="TMessage">The type of message that will be received.</typeparam>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The event data passed by the event, which includes the message that was received.</param>
-    public delegate void NamedPipeMessageReceivedHandler<TMessage>(Object sender, NamedPipeListenerMessageReceivedEventArgs<TMessage> e);
+    /// <summary>Представляет метод, который будет обрабатывать событие, когда сообщение получено через именованные каналы</summary>
+    /// <typeparam name="T">Тип сообщения, которое было получено</typeparam>
+    /// <param name="sender">Источник события</param>
+    /// <param name="e">Данные о событии, переданные событием, в том числе полученное сообщение</param>
+    public delegate void NamedPipeMessageReceivedHandler<T>(object sender, NamedPipeListenerMessageReceivedEventArgs<T> e);
 
-    /// <summary>Represents a method that will handle an event that is fired when an exception is caught.</summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The event data passed by the event, included the error type and exception that was caught.</param>
+    /// <summary>Представляет метод, который будет обрабатывать событие, которое запускается при обнаружении исключения</summary>
+    /// <param name="sender">Источник события</param>
+    /// <param name="e">Данные события, переданные событием, включали тип ошибки и исключение, которое было перехвачено</param>
     public delegate void NamedPipeMessageErrorHandler(Object sender, NamedPipeListenerErrorEventArgs e);
 
-    /// <summary>Includes different types of errors that describe where in the listening process an exception was caught.</summary>
+
+    /// <summary>Включает в себя различные типы ошибок, которые описывают, где в процессе прослушивания было обнаружено исключение</summary>
     public enum NamedPipeListenerErrorType : byte {
-        /// <summary>Indicates that an exception was caught while calling <see cref="NamedPipeServerStream.BeginWaitForConnection" />.</summary>
+        /// <summary>Указывает на то, что исключение было обнаружено во время вызова <see cref="NamedPipeServerStream.BeginWaitForConnection" />.</summary>
         BeginWaitForConnection = 1,
 
-        /// <summary>Indicates that an exception was caught while calling <see cref="NamedPipeServerStream.EndWaitForConnection" />.</summary>
+        /// <summary>Указывает на то, что исключение было обнаружено во время вызова <see cref="NamedPipeServerStream.EndWaitForConnection" />.</summary>
         EndWaitForConnection = 2,
 
-        /// <summary>Indicates that an exception was caught while deserializing a message received from the named pipe.</summary>
+        /// <summary>Указывает на то, что исключение было обнаружено во время десериализации сообщения, полученного из именованного канала</summary>
         DeserializeMessage = 3,
 
-        /// <summary>Indicates that an exception was caught while closing or disposing a used named pipe.</summary>
+        /// <summary>Указывает на то, что исключение было обнаружено во время закрытия или освобождения ресурсов использованного именованного канала</summary>
         CloseAndDisposePipe = 4,
 
-        /// <summary>Indicates that an exception was caught while invoking the <see cref="NamedPipeListener{TMessage}.MessageReceived"/> event.</summary>
+        /// <summary>Указывает на то, что исключение было обнаружено во время вызова <see cref="NamedPipeListener{TMessage}.MessageReceived"/> события</summary>
         NotifyMessageReceived = 5
     }
 
-    /// <summary>A helper class for sending and receiving messages using named pipes.</summary>
-    /// <typeparam name="TMessage">The type of message that will be sent or received.</typeparam>
-    public class NamedPipeListener<TMessage> : IDisposable {
-        /// <summary>Occurs when a message is received.</summary>
-        public event NamedPipeMessageReceivedHandler<TMessage> MessageReceived;
 
-        /// <summary>Occurs when an exception is caught.</summary>
+    /// <summary>Вспомогательный класс для отправки и получения сообщений с использованием именованных каналов</summary>
+    /// <typeparam name="T">Тип сообщения, которое будет отправлено или получено</typeparam>
+    public class NamedPipeListener<T> : IDisposable {
+
+        /// <summary>Происходит при получении сообщения</summary>
+        public event NamedPipeMessageReceivedHandler<T> MessageReceived;
+
+        /// <summary>Происходит при обнаружении исключения</summary>
         public event NamedPipeMessageErrorHandler Error;
 
-        static readonly String DEFAULT_PIPENAME = typeof(NamedPipeListener<TMessage>).FullName;
-        static readonly BinaryFormatter formatter = new BinaryFormatter();
+        private static readonly string DEFAULT_PIPENAME = typeof(NamedPipeListener<T>).FullName;
+        private static readonly BinaryFormatter formatter = new BinaryFormatter();
 
         NamedPipeServerStream pipeServer;
 
-        /// <summary>Initializes a new instance of <see cref="NamedPipeListener{TMessage}" /> using the specified <paramref name="pipeName" />.</summary>
-        /// <param name="pipeName">The name of the named pipe that will be used to listen on.</param>
-        public NamedPipeListener(String pipeName) {
-            this.PipeName = pipeName;
+
+        /// <summary>Инициализирует новый экземпляр <see cref="NamedPipeListener{T}" /> используя указанное <paramref name="pipeName" /></summary>
+        /// <param name="pipeName">Имя именованного канала, которое будет использоваться для прослушивания</param>
+        /// <param name="sidType">Тип идентификатора безопасности (SID)</param>
+        public NamedPipeListener(string pipeName, WellKnownSidType sidType) : this(pipeName) {
+            SidType = sidType;
         }
 
-        /// <summary>Initializes a new instance of <see cref="NamedPipeListener{TMessage}" /> using the default pipe name.</summary>
-        /// <remarks>The default pipe name is the full name of the type of the instance.</remarks>
+        /// <summary>Инициализирует новый экземпляр <see cref="NamedPipeListener{T}" /> используя указанное <paramref name="pipeName" /></summary>
+        /// <param name="pipeName">Имя именованного канала, которое будет использоваться для прослушивания</param>
+        public NamedPipeListener(string pipeName) {
+            PipeName = pipeName;
+        }
+
+        /// <summary>Инициализирует новый экземпляр <see cref="NamedPipeListener{T}" /> используя имя канала по умолчанию</summary>
+        /// <remarks>Имя канала по умолчанию - это полное имя типа экземпляра</remarks>
         public NamedPipeListener()
             : this(DEFAULT_PIPENAME) { }
 
-        /// <summary>The name of the named pipe that will be used to listen on.</summary>
-        public String PipeName { get; private set; }
+        /// <summary>Имя именованного канала, который будет использоваться для прослушивания</summary>
+        public string PipeName { get; private set; }
 
-        /// <summary>Starts listening on the named pipe specified for the instance.</summary>
+        /// <summary>
+        /// Тип идентификатора безопасности (SID)
+        /// </summary>
+        public WellKnownSidType SidType { get; private set; } = WellKnownSidType.NullSid;
+
+        private PipeSecurity GetPipeSecurityObject() {
+            if (SidType == WellKnownSidType.NullSid) {
+                return null;
+            }
+
+            SecurityIdentifier sid = new SecurityIdentifier(SidType, null);
+            PipeAccessRule pipeAccessRule = new PipeAccessRule(sid, PipeAccessRights.ReadWrite, AccessControlType.Allow);
+            PipeSecurity ps = new PipeSecurity();
+            ps.AddAccessRule(pipeAccessRule);
+
+            return ps;
+        }
+
+        /// <summary>Начинает прослушивать именованный канал для указанного экземпляра</summary>
         public void Start() {
-            if (pipeServer == null) pipeServer = new NamedPipeServerStream(DEFAULT_PIPENAME, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+            if (pipeServer == null) {
+                pipeServer = new NamedPipeServerStream(DEFAULT_PIPENAME, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous, 0, 0, GetPipeSecurityObject());
+            }
 
-            try { pipeServer.BeginWaitForConnection(new AsyncCallback(PipeConnectionCallback), null); }
-            catch (Exception ex) { this.OnError(NamedPipeListenerErrorType.BeginWaitForConnection, ex); }
+            try {
+                pipeServer.BeginWaitForConnection(new AsyncCallback(PipeConnectionCallback), null);
+            }
+            catch (Exception ex) {
+                OnError(NamedPipeListenerErrorType.BeginWaitForConnection, ex);
+            }
         }
 
         private void PipeConnectionCallback(IAsyncResult result) {
@@ -104,33 +143,33 @@ namespace Feodosiya.Lib.IO {
                 pipeServer.EndWaitForConnection(result);
             }
             catch (Exception ex) {
-                this.OnError(NamedPipeListenerErrorType.EndWaitForConnection, ex);
+                OnError(NamedPipeListenerErrorType.EndWaitForConnection, ex);
                 return;
             }
 
-            TMessage message;
+            T message;
             try {
-                message = (TMessage)formatter.Deserialize(pipeServer);
+                message = (T)formatter.Deserialize(pipeServer);
             }
             catch (Exception ex) {
-                this.OnError(NamedPipeListenerErrorType.DeserializeMessage, ex);
+                OnError(NamedPipeListenerErrorType.DeserializeMessage, ex);
                 return;
             }
 
             try {
-                this.OnMessageReceived(new NamedPipeListenerMessageReceivedEventArgs<TMessage>(message));
+                OnMessageReceived(new NamedPipeListenerMessageReceivedEventArgs<T>(message));
             }
             catch (Exception ex) {
-                this.OnError(NamedPipeListenerErrorType.NotifyMessageReceived, ex);
+                OnError(NamedPipeListenerErrorType.NotifyMessageReceived, ex);
                 return;
             }
 
-            if (this.End()) {
-                this.Start();
+            if (End()) {
+                Start();
             }
         }
 
-        public Boolean End() {
+        public bool End() {
             try {
                 pipeServer.Close();
                 pipeServer.Dispose();
@@ -139,27 +178,25 @@ namespace Feodosiya.Lib.IO {
                 return true;
             }
             catch (Exception ex) {
-                this.OnError(NamedPipeListenerErrorType.CloseAndDisposePipe, ex);
+                OnError(NamedPipeListenerErrorType.CloseAndDisposePipe, ex);
                 return false;
             }
         }
 
-        private void OnMessageReceived(TMessage message) {
-            this.OnMessageReceived(new NamedPipeListenerMessageReceivedEventArgs<TMessage>(message));
+        private void OnMessageReceived(T message) {
+            OnMessageReceived(new NamedPipeListenerMessageReceivedEventArgs<T>(message));
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="e"></param>
-        protected virtual void OnMessageReceived(NamedPipeListenerMessageReceivedEventArgs<TMessage> e) {
-            if (this.MessageReceived != null) {
-                this.MessageReceived(this, e);
-            }
+        protected virtual void OnMessageReceived(NamedPipeListenerMessageReceivedEventArgs<T> e) {
+            MessageReceived?.Invoke(this, e);
         }
 
         private void OnError(NamedPipeListenerErrorType errorType, Exception ex) {
-            this.OnError(new NamedPipeListenerErrorEventArgs(errorType, ex));
+            OnError(new NamedPipeListenerErrorEventArgs(errorType, ex));
         }
 
         /// <summary>
@@ -167,9 +204,7 @@ namespace Feodosiya.Lib.IO {
         /// </summary>
         /// <param name="e"></param>
         protected virtual void OnError(NamedPipeListenerErrorEventArgs e) {
-            if (this.Error != null) {
-                this.Error(this, e);
-            }
+            Error?.Invoke(this, e);
         }
 
         void IDisposable.Dispose() {
@@ -185,17 +220,17 @@ namespace Feodosiya.Lib.IO {
             }
         }
 
-        /// <summary>Sends the specified <paramref name="message" /> to the default named pipe for the message.</summary>        
-        /// <param name="message">The message to send.</param>
-        public static void SendMessage(TMessage message) {
-            NamedPipeListener<TMessage>.SendMessage(DEFAULT_PIPENAME, message);
+        /// <summary>Отправляет указанное <paramref name="message" /> на именованный по умолчанию канал</summary>        
+        /// <param name="message">Сообщение для отправки</param>
+        public static void SendMessage(T message) {
+            SendMessage(DEFAULT_PIPENAME, message);
         }
 
-        /// <summary>Sends the specified <paramref name="message" /> to the specified named pipe.</summary>
-        /// <param name="pipeName">The name of the named pipe the message will be sent to.</param>
-        /// <param name="message">The message to send.</param>
-        public static void SendMessage(String pipeName, TMessage message) {
-            using (var pipeClient = new NamedPipeClientStream(".", DEFAULT_PIPENAME, PipeDirection.Out, PipeOptions.None)) {
+        /// <summary>Отправляет указанное <paramref name="message" /> на указанный именованный канал</summary>
+        /// <param name="pipeName">Имя именованного канала, на который будет отправлено сообщение</param>
+        /// <param name="message">Сообщение для отправки</param>
+        public static void SendMessage(string pipeName, T message) {
+            using (var pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.None)) {
                 pipeClient.Connect();
 
                 formatter.Serialize(pipeClient, message);
