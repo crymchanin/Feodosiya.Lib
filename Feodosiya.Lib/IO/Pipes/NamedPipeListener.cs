@@ -5,7 +5,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 
 
-namespace Feodosiya.Lib.IO {
+namespace Feodosiya.Lib.IO.Pipes {
 
     /// <summary>Содержит данные о событии для <see cref="NamedPipeMessageReceivedHandler{T}" /> событий</summary>
     /// <typeparam name="T"></typeparam>
@@ -127,7 +127,7 @@ namespace Feodosiya.Lib.IO {
         /// <summary>Начинает прослушивать именованный канал для указанного экземпляра</summary>
         public void Start() {
             if (pipeServer == null) {
-                pipeServer = new NamedPipeServerStream(DEFAULT_PIPENAME, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous, 0, 0, GetPipeSecurityObject());
+                pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous, 0, 0, GetPipeSecurityObject());
             }
 
             try {

@@ -48,7 +48,7 @@
     <Compile Include="InteropServices\Win32ApiHelper.cs" />
     <Compile Include="InteropServices\winuser_h.cs" />
     <Compile Include="IO\IOHelper.cs" />
-    <Compile Include="IO\NamedPipeListener.cs" />
+    <Compile Include="IO\Pipes\NamedPipeListener.cs" />
     <Compile Include="Logs\DebugHelper.cs" />
     <Compile Include="Logs\Log.cs" />
     <Compile Include="Math\MathHelper.cs" />
@@ -64,9 +64,7 @@
   <ItemGroup>
     <Content Include="Changelog.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="IO\Pipes\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
