@@ -226,12 +226,35 @@ namespace Feodosiya.Lib.IO.Pipes {
             SendMessage(DEFAULT_PIPENAME, message);
         }
 
+        /// <summary>Отправляет указанное <paramref name="message" /> на именованный по умолчанию канал</summary>        
+        /// <param name="message">Сообщение для отправки</param>
+        /// <param name="timeout">Количество миллисекунд, определяющее время ожидания соединения с сервером</param>
+        public static void SendMessage(T message, int timeout) {
+            SendMessage(DEFAULT_PIPENAME, message, timeout);
+        }
+
         /// <summary>Отправляет указанное <paramref name="message" /> на указанный именованный канал</summary>
         /// <param name="pipeName">Имя именованного канала, на который будет отправлено сообщение</param>
         /// <param name="message">Сообщение для отправки</param>
         public static void SendMessage(string pipeName, T message) {
             using (var pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.None)) {
                 pipeClient.Connect();
+
+                formatter.Serialize(pipeClient, message);
+                pipeClient.Flush();
+
+                pipeClient.WaitForPipeDrain();
+                pipeClient.Close();
+            }
+        }
+
+        /// <summary>Отправляет указанное <paramref name="message" /> на указанный именованный канал</summary>
+        /// <param name="pipeName">Имя именованного канала, на который будет отправлено сообщение</param>
+        /// <param name="message">Сообщение для отправки</param>
+        /// <param name="timeout">Количество миллисекунд, определяющее время ожидания соединения с сервером</param>
+        public static void SendMessage(string pipeName, T message, int timeout) {
+            using (var pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.None)) {
+                pipeClient.Connect(timeout);
 
                 formatter.Serialize(pipeClient, message);
                 pipeClient.Flush();
