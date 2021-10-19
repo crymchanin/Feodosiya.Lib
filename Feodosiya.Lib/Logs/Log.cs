@@ -68,7 +68,8 @@ namespace Feodosiya.Lib.Logs {
         internal string _dateFormat;
         internal LogTypes _logType;
         internal bool _autoCompress = false;
-        internal long _maxLogSize = 1024 * 500;
+        internal const long _minLogSize = 1024; // 1 KB
+        internal long _maxLogSize = 1024 * 500; // 500 KB
         internal const string EMPTY_STRING = "";
         internal bool _enableThrows = false;
         internal object _fileLock = new object();
@@ -216,7 +217,7 @@ namespace Feodosiya.Lib.Logs {
                 return _maxLogSize;
             }
             set {
-                this._maxLogSize = value;
+                this._maxLogSize = System.Math.Max(_minLogSize, value);
             }
         }
 
