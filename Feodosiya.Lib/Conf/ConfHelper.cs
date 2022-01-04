@@ -111,6 +111,66 @@ namespace Feodosiya.Lib.Conf {
         }
 
         /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и возвращает его содержимое в виде строки JSON
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <returns></returns>
+        public string GetConfigJson(object configuration) {
+            return GetConfigJson(configuration, Encoding.Default, false);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и возвращает его содержимое в виде строки JSON
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="formatJson">Если имеет значение true, то JSON будет приведен к читаемому виду</param>
+        /// <returns></returns>
+        public string GetConfigJson(object configuration, bool formatJson) {
+            return GetConfigJson(configuration, Encoding.Default, formatJson);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и возвращает его содержимое в виде строки JSON
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="encoding">Кодировка в которую будет преобразован JSON</param>
+        /// <returns></returns>
+        public string GetConfigJson(object configuration, Encoding encoding) {
+            return GetConfigJson(configuration, encoding, false);
+        }
+
+        /// <summary>
+        /// Выполняет сериализацию объекта конфигурации и возвращает его содержимое в виде строки JSON
+        /// </summary>
+        /// <param name="configuration">Объект конфигурации</param>
+        /// <param name="encoding">Кодировка в которую будет преобразован JSON</param>
+        /// <param name="formatJson">Если имеет значение true, то JSON будет приведен к читаемому виду</param>
+        /// <returns></returns>
+        public string GetConfigJson(object configuration, Encoding encoding, bool formatJson) {
+            string json = "";
+            try {
+                using (MemoryStream ms = new MemoryStream()) {
+                    DataContractJsonSerializer ser = new DataContractJsonSerializer(configuration.GetType());
+
+                    ser.WriteObject(ms, configuration);
+                    json = encoding.GetString(ms.ToArray());
+                    if (formatJson) {
+                        json = JsonHelper.FormatJson(json);
+                    }
+                }
+
+                _isSuccess = true;  
+            }
+            catch (Exception error) {
+                System.Diagnostics.Debug.WriteLine(error.ToString());
+                _isSuccess = false;
+                _lastError = error;
+            }
+
+            return json;
+        }
+
+        /// <summary>
         /// Возвращает путь к конфигурационному файлу
         /// </summary>
         public string Path {

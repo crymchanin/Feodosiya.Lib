@@ -8,6 +8,30 @@ namespace Feodosiya.Lib.App {
     /// 
     /// </summary>
     public static class AppHelper {
+
+        /// <summary>
+        /// Создает GUID в указанном формате
+        /// </summary>
+        /// <param name="format">Формат GUID. Возможные варианты: N, D, B, P, X</param>
+        /// <returns></returns>
+        public static string GenerateGuid(string format = "N") {
+            string _format;
+            switch(format) {
+                case "N":
+                case "D":
+                case "B":
+                case "P":
+                case "X":
+                    _format = format;
+                    break;
+                default:
+                    _format = "N";
+                    break;
+            }
+
+            return Guid.NewGuid().ToString(_format);
+        }
+
         /// <summary>
         /// Добавляет указанную программу в автозагрузку
         /// </summary>

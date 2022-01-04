@@ -2,7 +2,7 @@
 using Feodosiya.Lib.InteropServices;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-
+using System.Management;
 
 namespace Feodosiya.Lib.OS {
     /// <summary>
@@ -53,6 +53,30 @@ namespace Feodosiya.Lib.OS {
                     Win32ApiHelper.CloseHandle(tokenHandle);
                 }
             }
+        }
+
+        /// <summary>
+        /// Возвращает имя пользователя текущего сеанса
+        /// </summary>
+        /// <returns></returns>
+        public static string CurrentUserName() {
+            string result = "";
+            try {
+                ManagementScope ms = new ManagementScope("\\\\.\\root\\cimv2");
+                ObjectQuery query = new ObjectQuery("SELECT UserName FROM Win32_ComputerSystem");
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(ms, query);
+
+                foreach (ManagementObject mo in searcher.Get()) {
+                    string userName = mo["UserName"].ToString();
+                    result = userName.Substring(userName.LastIndexOf("\\") + 1);
+                    break;
+                }
+            }
+            catch {
+                result = "<ERROR>";
+            }
+
+            return result;
         }
     }
 }
